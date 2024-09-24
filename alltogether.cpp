@@ -324,6 +324,25 @@ void TLAS::Build()
 		tlasNode[nodesUsed++].leftRight = 0; // makes it a leaf
 	}
 	// use agglomerative clustering to build the TLAS
+	
+        /**** pseudo-code
+	TLASNode A = list.GetFirst();
+	TLASNode B = list.FindBestMatch( A );
+	while (list.size() > 1)
+	{
+		TLASNode C = list.FindBestMatch( B );
+		if (A == C)
+		{
+			list.Remove( A );
+			list.Remove( B );
+			A = new Node( A, B );
+			list.Add( A );
+			B = list.FindBestMatch( A );
+		}
+		else A = B, B = C;
+	} 
+	***/
+	
 	int A = 0, B = FindBestMatch( nodeIdx, nodeIndices, A );
 	while (nodeIndices > 1)
 	{
@@ -337,9 +356,9 @@ void TLAS::Build()
 			newNode.leftRight = nodeIdxA + (nodeIdxB << 16);
 			newNode.aabbMin = fminf( nodeA.aabbMin, nodeB.aabbMin );
 			newNode.aabbMax = fmaxf( nodeA.aabbMax, nodeB.aabbMax );
-			nodeIdx[A] = nodesUsed++;
-			nodeIdx[B] = nodeIdx[nodeIndices - 1];
-			B = FindBestMatch( nodeIdx, --nodeIndices, A );
+			nodeIdx[A] = nodesUsed++;  // place new node in place of A, so orignal A is removed.
+			nodeIdx[B] = nodeIdx[nodeIndices - 1];  // place the last node in place B, so orignal B is removed.
+			B = FindBestMatch( nodeIdx, --nodeIndices, A );  // the last node is skipped, because it has been moved to the place B, in upper sentence.
 		}
 		else A = B, B = C;
 	}
